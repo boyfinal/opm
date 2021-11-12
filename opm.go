@@ -2,7 +2,6 @@ package opm
 
 import (
 	"errors"
-	"filetranh/core/utils"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -13,26 +12,24 @@ import (
 )
 
 var (
-	// ErrUnsupportedMediaType        = NewHTTPError(http.StatusUnsupportedMediaType)
-	// ErrNotFound                    = NewHTTPError(http.StatusNotFound)
-	// ErrUnauthorized                = NewHTTPError(http.StatusUnauthorized)
-	// ErrForbidden                   = NewHTTPError(http.StatusForbidden)
-	// ErrMethodNotAllowed            = NewHTTPError(http.StatusMethodNotAllowed)
-	// ErrStatusRequestEntityTooLarge = NewHTTPError(http.StatusRequestEntityTooLarge)
-	// ErrTooManyRequests             = NewHTTPError(http.StatusTooManyRequests)
-	// ErrBadRequest                  = NewHTTPError(http.StatusBadRequest)
-	// ErrBadGateway                  = NewHTTPError(http.StatusBadGateway)
-	// ErrInternalServerError         = NewHTTPError(http.StatusInternalServerError)
-	// ErrRequestTimeout              = NewHTTPError(http.StatusRequestTimeout)
-	// ErrServiceUnavailable          = NewHTTPError(http.StatusServiceUnavailable)
-	ErrMethodMismatch         = errors.New("method is not allowed")
-	ErrNotFound               = errors.New("no matching route was found")
-	ErrValidatorNotRegistered = errors.New("validator not registered")
-	ErrRendererNotRegistered  = errors.New("renderer not registered")
-	ErrInvalidRedirectCode    = errors.New("invalid redirect status code")
-	ErrCookieNotFound         = errors.New("cookie not found")
-	ErrInvalidCertOrKeyType   = errors.New("invalid cert or key type, must be string or []byte")
-	ErrInvalidListenerNetwork = errors.New("invalid listener network")
+	ErrUnsupportedMediaType        = NewHTTPError(http.StatusUnsupportedMediaType)
+	ErrNotFound                    = NewHTTPError(http.StatusNotFound)
+	ErrUnauthorized                = NewHTTPError(http.StatusUnauthorized)
+	ErrForbidden                   = NewHTTPError(http.StatusForbidden)
+	ErrMethodNotAllowed            = NewHTTPError(http.StatusMethodNotAllowed)
+	ErrStatusRequestEntityTooLarge = NewHTTPError(http.StatusRequestEntityTooLarge)
+	ErrTooManyRequests             = NewHTTPError(http.StatusTooManyRequests)
+	ErrBadRequest                  = NewHTTPError(http.StatusBadRequest)
+	ErrBadGateway                  = NewHTTPError(http.StatusBadGateway)
+	ErrInternalServerError         = NewHTTPError(http.StatusInternalServerError)
+	ErrRequestTimeout              = NewHTTPError(http.StatusRequestTimeout)
+	ErrServiceUnavailable          = NewHTTPError(http.StatusServiceUnavailable)
+	ErrValidatorNotRegistered      = errors.New("validator not registered")
+	ErrRendererNotRegistered       = errors.New("renderer not registered")
+	ErrInvalidRedirectCode         = errors.New("invalid redirect status code")
+	ErrCookieNotFound              = errors.New("cookie not found")
+	ErrInvalidCertOrKeyType        = errors.New("invalid cert or key type, must be string or []byte")
+	ErrInvalidListenerNetwork      = errors.New("invalid listener network")
 
 	methods = [...]string{
 		http.MethodConnect,
@@ -51,7 +48,7 @@ type (
 	Router struct {
 		sync.Mutex
 
-		Log         Logger
+		Logger      Logger
 		Renderer    Renderer
 		pool        sync.Pool
 		namedRoutes map[string]*Route
@@ -77,6 +74,13 @@ type (
 
 	HandlerFunc    func(Context) error
 	MiddlewareFunc func(Handler) Handler
+
+	HTTPError struct {
+		Code    int         `json:"-"`
+		Message interface{} `json:"message"`
+	}
+
+	Map map[string]interface{}
 )
 
 func (f HandlerFunc) Run(c Context) error {
@@ -110,8 +114,8 @@ func NewRouter() *Router {
 	return r
 }
 
-func (r *Router) SetLog(log Logger) *Router {
-	r.Log = log
+func (r *Router) SetLog(logger Logger) *Router {
+	r.Logger = logger
 	return r
 }
 
@@ -121,7 +125,7 @@ func (r *Router) NewContext(w http.ResponseWriter, req *http.Request) Context {
 		request:  req,
 		response: w,
 		renderer: r.Renderer,
-		logger:   r.Log,
+		logger:   r.Logger,
 		body:     make(map[string]interface{}),
 	}
 }
@@ -145,7 +149,7 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, rq *http.Request) {
 		c.SetParamValues(match.PValues...)
 	}
 
-	if h == nil && match.MatchErr == ErrMethodMismatch {
+	if h == nil && match.MatchErr == ErrMethodNotAllowed {
 		h = methodNotAllowedHandler
 	}
 
@@ -161,8 +165,8 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, rq *http.Request) {
 				notFoundHandler.Run(c)
 			}
 		} else {
-			if r.Log != nil {
-				r.Log.Error(err)
+			if r.Logger != nil {
+				r.Logger.Error(err)
 			} else {
 				fmt.Println(err)
 			}
@@ -204,7 +208,7 @@ func (r *Router) Match(req *http.Request, match *RouteMatch) bool {
 		}
 
 		if route.method != req.Method {
-			match.MatchErr = ErrMethodMismatch
+			match.MatchErr = ErrMethodNotAllowed
 			continue
 		}
 
@@ -226,7 +230,7 @@ func (r *Router) Match(req *http.Request, match *RouteMatch) bool {
 		return true
 	}
 
-	if match.MatchErr == ErrMethodMismatch {
+	if match.MatchErr == ErrMethodNotAllowed {
 		if r.MethodNotAllowedHandler != nil {
 			match.Handler = r.MethodNotAllowedHandler
 			return true
@@ -326,10 +330,10 @@ func (r *Router) static(path, root string, get func(string, Handler, ...Middlewa
 	})
 
 	if !strings.HasSuffix(path, "/") {
-		path = utils.Strcon(path, "/")
+		path = Strcon(path, "/")
 	}
 
-	path = utils.Strcon(path, "{path:.*}")
+	path = Strcon(path, "{path:.*}")
 	return get(path, f)
 }
 
@@ -355,4 +359,44 @@ func getPath(r *http.Request) string {
 	}
 
 	return path
+}
+
+func (r *Router) DefaultHTTPErrorHandler(err error, c Context) {
+	he, ok := err.(*HTTPError)
+	if !ok {
+		he = &HTTPError{
+			Code:    http.StatusInternalServerError,
+			Message: http.StatusText(http.StatusInternalServerError),
+		}
+	}
+
+	// Issue #1426
+	code := he.Code
+	message := he.Message
+	if m, ok := he.Message.(string); ok {
+		message = Map{"message": m}
+	}
+
+	if c.Request().Method == http.MethodHead {
+		err = c.NoContent(he.Code)
+	} else {
+		err = c.JSON(code, message)
+	}
+
+	if err != nil {
+		r.Logger.Error(err)
+	}
+}
+
+func NewHTTPError(code int, message ...interface{}) *HTTPError {
+	err := &HTTPError{Code: code, Message: http.StatusText(code)}
+	if len(message) > 0 {
+		err.Message = message[0]
+	}
+
+	return err
+}
+
+func (e *HTTPError) Error() string {
+	return fmt.Sprintf("code=%d, message=%v", e.Code, e.Message)
 }
