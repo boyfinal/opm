@@ -2,7 +2,8 @@ package template
 
 import (
 	"html/template"
-	"opm"
+
+	"github.com/boyfinal/opm"
 )
 
 func rawhtml(str string) template.HTML {

@@ -2,8 +2,8 @@ package csrf
 
 import (
 	"net/url"
-	"opm"
 
+	"github.com/boyfinal/opm"
 	"github.com/gorilla/securecookie"
 	"github.com/pkg/errors"
 )

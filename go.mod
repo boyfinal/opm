@@ -1,4 +1,4 @@
-module opm
+module github.com/boyfinal/opm
 
 go 1.16
 

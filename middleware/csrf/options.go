@@ -1,7 +1,7 @@
 package csrf
 
 import (
-	"opm"
+	"github.com/boyfinal/opm"
 )
 
 // Option describes a functional option for configuring the CSRF handler.

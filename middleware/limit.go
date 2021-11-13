@@ -3,8 +3,9 @@ package middleware
 import (
 	"net"
 	"net/http"
-	"opm"
 	"sync"
+
+	"github.com/boyfinal/opm"
 )
 
 type Limiter struct {

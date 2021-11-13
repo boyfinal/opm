@@ -8,7 +8,8 @@ import (
 	"html/template"
 	"net/http"
 	"net/url"
-	"opm"
+
+	"github.com/boyfinal/opm"
 )
 
 // Token returns a masked CSRF token ready for passing into HTML template or

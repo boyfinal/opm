@@ -4,9 +4,9 @@ import (
 	"crypto/subtle"
 	"encoding/base64"
 	"net/http"
-	"opm"
 	"time"
 
+	"github.com/boyfinal/opm"
 	"github.com/gorilla/securecookie"
 )
 

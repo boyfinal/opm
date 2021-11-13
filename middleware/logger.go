@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
-	"opm"
 	"time"
+
+	"github.com/boyfinal/opm"
 )
 
 // Logger --
