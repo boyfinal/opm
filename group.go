@@ -78,14 +78,14 @@ func (g *Group) Group(f func(*Group)) {
 	f(g)
 }
 
-func (r *Router) newGroup(prefix string, m ...MiddlewareFunc) *Group {
+func (r *Router) NewGroup(prefix string, m ...MiddlewareFunc) *Group {
 	return &Group{router: r, prefix: prefix, middlewares: m}
 }
 
 func (r *Router) Prefix(prefix string) *Group {
-	return r.newGroup(prefix)
+	return r.NewGroup(prefix)
 }
 
 func (r *Router) Middleware(m ...MiddlewareFunc) *Group {
-	return r.newGroup("", m...)
+	return r.NewGroup("", m...)
 }
