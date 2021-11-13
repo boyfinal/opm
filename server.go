@@ -12,7 +12,7 @@ import (
 
 const (
 	DefaultHost  = "localhost"
-	DefalutPort  = 8080
+	DefaultPort  = 8080
 	WriteTimeout = 45 * time.Second
 	ReadTimeout  = 45 * time.Second
 )
@@ -20,7 +20,7 @@ const (
 type Server struct {
 	Name         string
 	Host         string
-	Port         string
+	Port         int
 	Addr         string
 	Handler      http.Handler
 	WriteTimeout time.Duration
@@ -28,8 +28,18 @@ type Server struct {
 }
 
 func (s *Server) Run(or *Router) {
+	httphost := DefaultHost
+	if s.Host != "" {
+		httphost = s.Host
+	}
+
+	httpport := DefaultPort
+	if s.Host != "" {
+		httpport = s.Port
+	}
+
 	if s.Addr == "" {
-		s.Addr = fmt.Sprintf("%s:%d", DefaultHost, DefalutPort)
+		s.Addr = fmt.Sprintf("%s:%d", httphost, httpport)
 	}
 
 	if s.WriteTimeout < 1 {
