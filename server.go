@@ -27,7 +27,7 @@ type Server struct {
 	ReadTimeout  time.Duration
 }
 
-func (s *Server) Run(or *Router) {
+func (s *Server) Run() {
 	httphost := DefaultHost
 	if s.Host != "" {
 		httphost = s.Host
