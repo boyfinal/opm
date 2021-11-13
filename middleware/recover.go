@@ -7,8 +7,8 @@ import (
 	"opm"
 )
 
-// CatchPanicRouterMiddleware --
-func CatchPanicRouterMiddleware(next opm.Handler) opm.Handler {
+// Recover --
+func Recover(next opm.Handler) opm.Handler {
 	return opm.HandlerFunc(func(c opm.Context) error {
 		defer func() {
 			var err error

@@ -9,8 +9,8 @@ import (
 	"time"
 )
 
-// LogRequestMiddleware --
-func LogRequestMiddleware(next opm.Handler) opm.Handler {
+// Logger --
+func Logger(next opm.Handler) opm.Handler {
 	return opm.HandlerFunc(func(c opm.Context) error {
 		defer func() {
 			startedTime := time.Now()
