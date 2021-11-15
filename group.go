@@ -74,18 +74,18 @@ func (g *Group) add(method, path string, h Handler, middleware ...MiddlewareFunc
 	return g.router.Path(g.prefix + path).Handler(h).Method(method).Use(m...)
 }
 
-func (g *Group) Group(f func(*Group)) {
-	f(g)
-}
-
-func (r *Router) NewGroup(prefix string, m ...MiddlewareFunc) *Group {
-	return &Group{router: r, prefix: prefix, middlewares: m}
+func (g *Group) Group(prefix string, middlewares ...MiddlewareFunc) *Group {
+	m := make([]MiddlewareFunc, 0, len(g.middlewares)+len(middlewares))
+	m = append(m, g.middlewares...)
+	m = append(m, middlewares...)
+	g.router.Group(g.prefix+prefix, m...)
+	return g.router.Group(g.prefix+prefix, m...)
 }
 
 func (r *Router) Prefix(prefix string) *Group {
-	return r.NewGroup(prefix)
+	return r.Group(prefix)
 }
 
 func (r *Router) Middleware(m ...MiddlewareFunc) *Group {
-	return r.NewGroup("", m...)
+	return r.Group("", m...)
 }

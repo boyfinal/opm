@@ -388,6 +388,10 @@ func (r *Router) DefaultHTTPErrorHandler(err error, c Context) {
 	}
 }
 
+func (r *Router) Group(prefix string, m ...MiddlewareFunc) *Group {
+	return &Group{router: r, prefix: prefix, middlewares: m}
+}
+
 func NewHTTPError(code int, message ...interface{}) *HTTPError {
 	err := &HTTPError{Code: code, Message: http.StatusText(code)}
 	if len(message) > 0 {
