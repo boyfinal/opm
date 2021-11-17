@@ -34,7 +34,7 @@ func (s *Server) Run() {
 	}
 
 	httpport := DefaultPort
-	if s.Host != "" {
+	if s.Port > 0 {
 		httpport = s.Port
 	}
 
