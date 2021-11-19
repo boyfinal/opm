@@ -18,8 +18,8 @@ func Logger(next opm.Handler) opm.Handler {
 			randomNumber := rand.Intn(100000-1000) + 1000
 			requestID := fmt.Sprintf("%x", md5.Sum([]byte(fmt.Sprintf("%d + %d", randomNumber, startedTime.Nanosecond()))))
 
-			c.Response().Header().Set("X-Request-ID", requestID)
-			log.Println(requestID, c.Request().Method, c.Request().URL.Path, c.Request().RemoteAddr, c.Request().UserAgent(), c.Route().GetName())
+			c.Response().Header().Set(opm.HeaderXRequestID, requestID)
+			log.Println(requestID, c.Request().Method, c.Request().URL.Path, c.RealIP(), c.Request().UserAgent(), c.Route().GetName())
 		}()
 
 		return next.Run(c)

@@ -60,8 +60,12 @@ func (s *Server) Run() {
 
 	go func() {
 		fmt.Printf("Server running %s\n", s.Addr)
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Panicf("Listen and serve: %v\n", err)
+		if err := srv.ListenAndServe(); err != nil {
+			if err == http.ErrServerClosed {
+				log.Println("commencing server shutdown...")
+			} else {
+				log.Panicf("Listen and serve: %v\n", err)
+			}
 		}
 	}()
 
@@ -75,9 +79,7 @@ func (s *Server) Run() {
 	ctx, cancel := sdtContext.WithTimeout(sdtContext.Background(), time.Second*15)
 	defer cancel()
 
-	if err := srv.Shutdown(ctx); err != nil {
-		log.Panicf("Shutting down serve: %v", err)
-	}
-
-	fmt.Printf("Shutting down serve: %s", s.Name)
+	srv.Shutdown(ctx)
+	log.Printf("shutdown serve: %s", s.Name)
+	os.Exit(0)
 }

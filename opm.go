@@ -12,6 +12,34 @@ import (
 )
 
 var (
+	HeaderAccept              = "Accept"
+	HeaderAcceptEncoding      = "Accept-Encoding"
+	HeaderAllow               = "Allow"
+	HeaderAuthorization       = "Authorization"
+	HeaderContentDisposition  = "Content-Disposition"
+	HeaderContentEncoding     = "Content-Encoding"
+	HeaderContentLength       = "Content-Length"
+	HeaderContentType         = "Content-Type"
+	HeaderCookie              = "Cookie"
+	HeaderSetCookie           = "Set-Cookie"
+	HeaderIfModifiedSince     = "If-Modified-Since"
+	HeaderLastModified        = "Last-Modified"
+	HeaderLocation            = "Location"
+	HeaderUpgrade             = "Upgrade"
+	HeaderVary                = "Vary"
+	HeaderWWWAuthenticate     = "WWW-Authenticate"
+	HeaderXForwardedFor       = "X-Forwarded-For"
+	HeaderXForwardedProto     = "X-Forwarded-Proto"
+	HeaderXForwardedProtocol  = "X-Forwarded-Protocol"
+	HeaderXForwardedSsl       = "X-Forwarded-Ssl"
+	HeaderXUrlScheme          = "X-Url-Scheme"
+	HeaderXHTTPMethodOverride = "X-HTTP-Method-Override"
+	HeaderXRealIP             = "X-Real-IP"
+	HeaderXRequestID          = "X-Request-ID"
+	HeaderXRequestedWith      = "X-Requested-With"
+	HeaderServer              = "Server"
+	HeaderOrigin              = "Origin"
+
 	ErrUnsupportedMediaType        = NewHTTPError(http.StatusUnsupportedMediaType)
 	ErrNotFound                    = NewHTTPError(http.StatusNotFound)
 	ErrUnauthorized                = NewHTTPError(http.StatusUnauthorized)
@@ -68,13 +96,18 @@ type (
 		MatchErr error
 	}
 
+	// Handler a responds to an HTTP request
 	Handler interface {
 		Run(Context) error
 	}
 
-	HandlerFunc    func(Context) error
+	// HandlerFunc defines a function to serve HTTP request
+	HandlerFunc func(Context) error
+
+	// MiddlewareFunc defines a function to process middleware
 	MiddlewareFunc func(Handler) Handler
 
+	// HTTPError an error that occurred while handing a request
 	HTTPError struct {
 		Code    int         `json:"-"`
 		Message interface{} `json:"message"`
@@ -130,6 +163,7 @@ func (r *Router) NewContext(w http.ResponseWriter, req *http.Request) Context {
 	}
 }
 
+// Use adds middleware
 func (r *Router) Use(m ...MiddlewareFunc) {
 	r.middleware = append(r.middleware, m...)
 }

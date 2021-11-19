@@ -5,10 +5,12 @@ import (
 	"encoding/json"
 	"io"
 	"mime/multipart"
+	"net"
 	"net/http"
 	"net/url"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 )
 
@@ -139,6 +141,9 @@ type (
 
 		// Domain returns site domain
 		Domain() string
+
+		// RealIP return real ip
+		RealIP() string
 	}
 
 	Renderer interface {
@@ -434,4 +439,22 @@ func (c *context) SetRoute(route *Route) {
 
 func (c *context) Domain() string {
 	return c.Request().Host
+}
+
+func (c *context) RealIP() string {
+	ip := c.Request().Header.Get(HeaderXRealIP)
+	if netIP := net.ParseIP(ip); netIP != nil {
+		return ip
+	}
+
+	ips := c.Request().Header.Get(HeaderXForwardedFor)
+	splitIP := strings.Split(ips, ",")
+	for _, ip := range splitIP {
+		if netIP := net.ParseIP(ip); netIP != nil {
+			return ip
+		}
+	}
+
+	rip, _, _ := net.SplitHostPort(c.Request().RemoteAddr)
+	return rip
 }
