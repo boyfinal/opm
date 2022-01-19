@@ -268,8 +268,8 @@ func (c *context) FormParams(name string) (url.Values, error) {
 
 func (c *context) writeContentType(value string) {
 	header := c.Response().Header()
-	if header.Get("Content-Type") == "" {
-		header.Set("Content-Type", value)
+	if header.Get(HeaderContentType) == "" {
+		header.Set(HeaderContentType, value)
 	}
 }
 
@@ -287,7 +287,7 @@ func (c *context) HTML(code int, html string) (err error) {
 }
 
 func (c *context) HTMLBlob(code int, b []byte) (err error) {
-	return c.Blob(code, "text/html;charset=UTF-8", b)
+	return c.Blob(code, MIMETextHTMLCharsetUTF8, b)
 }
 
 func (c *context) Blob(code int, contentType string, b []byte) (err error) {
@@ -305,11 +305,11 @@ func (c *context) Stream(code int, contentType string, r io.Reader) (err error) 
 }
 
 func (c *context) String(code int, s string) (err error) {
-	return c.Blob(code, "text/plain;charset=UTF-8", []byte(s))
+	return c.Blob(code, MIMETextPlainCharsetUTF8, []byte(s))
 }
 
 func (c *context) json(code int, b []byte) error {
-	c.writeContentType("application/json;charset=UTF-8")
+	c.writeContentType(MIMEApplicationJSONCharsetUTF8)
 	c.Response().WriteHeader(code)
 	_, err := c.Response().Write(b)
 	return err

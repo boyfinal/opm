@@ -52,37 +52,37 @@ func TestEchoNotAllow(t *testing.T) {
 	}
 }
 
-func TestEchoGet(t *testing.T) {
+func TestGet(t *testing.T) {
 	o := NewRouter()
 	testMethod(t, http.MethodGet, "/test", o)
 }
 
-func TestEchoHead(t *testing.T) {
+func TestHead(t *testing.T) {
 	o := NewRouter()
 	testMethod(t, http.MethodHead, "/test", o)
 }
 
-func TestEchoPost(t *testing.T) {
+func TestPost(t *testing.T) {
 	o := NewRouter()
 	testMethod(t, http.MethodPost, "/test", o)
 }
 
-func TestEchoPut(t *testing.T) {
+func TestPut(t *testing.T) {
 	o := NewRouter()
 	testMethod(t, http.MethodPut, "/test", o)
 }
 
-func TestEchoPatch(t *testing.T) {
+func TestPatch(t *testing.T) {
 	o := NewRouter()
 	testMethod(t, http.MethodPatch, "/test", o)
 }
 
-func TestEchoDelete(t *testing.T) {
+func TestDelete(t *testing.T) {
 	o := NewRouter()
 	testMethod(t, http.MethodDelete, "/test", o)
 }
 
-func TestEchoConnect(t *testing.T) {
+func TestConnect(t *testing.T) {
 	o := NewRouter()
 	testMethod(t, http.MethodConnect, "/test", o)
 }
