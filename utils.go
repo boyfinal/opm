@@ -3,10 +3,12 @@ package opm
 import (
 	"bytes"
 	"crypto/rand"
+	"reflect"
 	"strconv"
 	"strings"
 )
 
+// GenerateRandBytes returns generated random bytes
 func GenerateRandBytes(n int) ([]byte, error) {
 	b := make([]byte, n)
 	_, err := rand.Read(b)
@@ -39,9 +41,55 @@ func Strcon(ss ...string) string {
 	return b.String()
 }
 
-func Contains(vals []string, s string) bool {
-	for _, v := range vals {
-		if v == s {
+func InArrayString(arr []string, in string) bool {
+	n := len(arr)
+	if n%2 == 1 && in == arr[n-1] {
+		return true
+	}
+
+	k := n / 2
+	for i := 0; i < k; i++ {
+		if in == arr[i] {
+			return true
+		}
+
+		if in == arr[i+k] {
+			return true
+		}
+	}
+
+	return false
+}
+
+func InArrayString1(arr []string, in string) bool {
+	n := len(arr)
+	for i := 0; i < n; i++ {
+		if in == arr[i] {
+			return true
+		}
+	}
+
+	return false
+}
+
+func InArrayString2(arr []string, in string) bool {
+	for _, v := range arr {
+		if v == in {
+			return true
+		}
+	}
+
+	return false
+}
+
+func Contains(arr interface{}, in interface{}) bool {
+	if kind := reflect.TypeOf(arr).Kind(); kind != reflect.Slice && kind != reflect.Array {
+		return false
+	}
+
+	values := reflect.ValueOf(arr)
+	for i := 0; i < values.Len(); i++ {
+		if reflect.DeepEqual(in, values.Index(i).Interface()) {
 			return true
 		}
 	}
@@ -52,29 +100,29 @@ func Contains(vals []string, s string) bool {
 func NumFormat(v interface{}) string {
 	switch s := v.(type) {
 	case int:
-		return numFormart(int64(s))
+		return strconv.Itoa(s)
 	case int8:
-		return numFormart(int64(s))
+		return strconv.FormatInt(int64(s), 10)
 	case int16:
-		return numFormart(int64(s))
+		return strconv.FormatInt(int64(s), 10)
 	case int32:
-		return numFormart(int64(s))
+		return strconv.FormatInt(int64(s), 10)
 	case int64:
-		return numFormart(int64(s))
+		return strconv.FormatInt(int64(s), 10)
 	case uint:
-		return numFormart(int64(s))
+		return strconv.FormatUint(uint64(s), 10)
 	case uint8:
-		return numFormart(int64(s))
+		return strconv.FormatUint(uint64(s), 10)
 	case uint16:
-		return numFormart(int64(s))
+		return strconv.FormatUint(uint64(s), 10)
 	case uint32:
-		return numFormart(int64(s))
+		return strconv.FormatUint(uint64(s), 10)
 	case uint64:
-		return numFormart(int64(s))
+		return strconv.FormatUint(uint64(s), 10)
 	case float32:
-		return floatFormart(float64(s))
+		return strconv.FormatFloat(float64(s), 'f', -1, 32)
 	case float64:
-		return floatFormart(s)
+		return strconv.FormatFloat(s, 'f', -1, 64)
 	case string:
 		return v.(string)
 	default:
@@ -122,6 +170,8 @@ func dformat(s string, t bool) string {
 func floatFormart(v float64) string {
 	s := strconv.FormatFloat(v, 'f', -1, 64)
 	ar := strings.Split(s, ".")
+
+	println(s, ar)
 
 	ss := dformat(ar[0], true)
 	if len(ar) > 1 {
