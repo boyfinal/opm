@@ -144,7 +144,7 @@ func mask(realToken []byte) string {
 		return ""
 	}
 
-	return base64.StdEncoding.EncodeToString(append(otp, opm.XorBytes(otp, realToken)...))
+	return base64.StdEncoding.EncodeToString(append(otp, opm.Xor(otp, realToken)...))
 }
 
 func unmask(issued []byte) []byte {
@@ -155,7 +155,7 @@ func unmask(issued []byte) []byte {
 	otp := issued[tokenLength:]
 	masked := issued[:tokenLength]
 
-	return opm.XorBytes(otp, masked)
+	return opm.Xor(otp, masked)
 }
 
 func compareTokens(a, b []byte) bool {

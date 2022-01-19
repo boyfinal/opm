@@ -58,7 +58,7 @@ func mask(realToken []byte) string {
 	// XOR the OTP with the real token to generate a masked token. Append the
 	// OTP to the front of the masked token to allow unmasking in the subsequent
 	// request.
-	return base64.StdEncoding.EncodeToString(append(otp, opm.XorBytes(otp, realToken)...))
+	return base64.StdEncoding.EncodeToString(append(otp, opm.Xor(otp, realToken)...))
 }
 
 // unmask splits the issued token (one-time-pad + masked token) and returns the
@@ -74,7 +74,7 @@ func unmask(issued []byte) []byte {
 	masked := issued[:tokenLength]
 
 	// Unmask the token by XOR'ing it against the OTP used to mask it.
-	return opm.XorBytes(otp, masked)
+	return opm.Xor(otp, masked)
 }
 
 // requestToken returns the issued token (pad + masked token) from the HTTP POST

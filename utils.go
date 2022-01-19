@@ -5,7 +5,6 @@ import (
 	"crypto/rand"
 	"reflect"
 	"strconv"
-	"strings"
 )
 
 // GenerateRandBytes returns generated random bytes
@@ -19,7 +18,8 @@ func GenerateRandBytes(n int) ([]byte, error) {
 	return b, nil
 }
 
-func XorBytes(a, b []byte) []byte {
+// Xor []byte
+func Xor(a, b []byte) []byte {
 	n := len(a)
 	if n > len(b) {
 		n = len(b)
@@ -33,6 +33,7 @@ func XorBytes(a, b []byte) []byte {
 	return res
 }
 
+// Strcon concat multiple string
 func Strcon(ss ...string) string {
 	var b bytes.Buffer
 	for _, s := range ss {
@@ -41,27 +42,24 @@ func Strcon(ss ...string) string {
 	return b.String()
 }
 
+// func InArrayString(arr []string, in string) bool {
+// 	n := len(arr)
+// 	if n%2 == 1 && in == arr[n-1] {
+// 		return true
+// 	}
+
+// 	k := n / 2
+// 	for i := 0; i < k; i++ {
+// 		if in == arr[i] || in == arr[i+k] {
+// 			return true
+// 		}
+// 	}
+
+// 	return false
+// }
+
+// InArrayString determines whether an array string includes a certain value among its entries
 func InArrayString(arr []string, in string) bool {
-	n := len(arr)
-	if n%2 == 1 && in == arr[n-1] {
-		return true
-	}
-
-	k := n / 2
-	for i := 0; i < k; i++ {
-		if in == arr[i] {
-			return true
-		}
-
-		if in == arr[i+k] {
-			return true
-		}
-	}
-
-	return false
-}
-
-func InArrayString1(arr []string, in string) bool {
 	n := len(arr)
 	for i := 0; i < n; i++ {
 		if in == arr[i] {
@@ -72,16 +70,7 @@ func InArrayString1(arr []string, in string) bool {
 	return false
 }
 
-func InArrayString2(arr []string, in string) bool {
-	for _, v := range arr {
-		if v == in {
-			return true
-		}
-	}
-
-	return false
-}
-
+// Contains determines whether an array includes a certain value among its entries
 func Contains(arr interface{}, in interface{}) bool {
 	if kind := reflect.TypeOf(arr).Kind(); kind != reflect.Slice && kind != reflect.Array {
 		return false
@@ -97,6 +86,7 @@ func Contains(arr interface{}, in interface{}) bool {
 	return false
 }
 
+// NumFormat convert a number to string
 func NumFormat(v interface{}) string {
 	switch s := v.(type) {
 	case int:
@@ -128,75 +118,4 @@ func NumFormat(v interface{}) string {
 	default:
 		return ""
 	}
-}
-
-func numFormart(v int64) string {
-	s := strconv.FormatInt(v, 10)
-	return dformat(s, true)
-}
-
-func dformat(s string, t bool) string {
-	if s == "" {
-		return s
-	}
-
-	if s[0:1] == "-" {
-		return "-" + dformat(s[1:], t)
-	}
-
-	var runes []rune
-	if t {
-		s = reverse(s)
-	}
-
-	for i, r := range s {
-		runes = append(runes, r)
-		if (i+1)%3 == 0 {
-			runes = append(runes, 44)
-		}
-	}
-
-	if i := len(runes) - 1; runes[i] == 44 {
-		runes = runes[:i]
-	}
-
-	if t {
-		return runereverse(runes)
-	}
-
-	return string(runes)
-}
-
-func floatFormart(v float64) string {
-	s := strconv.FormatFloat(v, 'f', -1, 64)
-	ar := strings.Split(s, ".")
-
-	println(s, ar)
-
-	ss := dformat(ar[0], true)
-	if len(ar) > 1 {
-		ss = ss + "." + dformat(ar[1], false)
-	}
-
-	return ss
-}
-
-func reverse(s string) string {
-	n := len(s)
-	runes := make([]rune, n)
-	for i, r := range s {
-		runes[n-i-1] = r
-	}
-
-	return string(runes)
-}
-
-func runereverse(r []rune) string {
-	n := len(r)
-	runes := make([]rune, n)
-	for i, v := range r {
-		runes[n-i-1] = v
-	}
-
-	return string(runes)
 }

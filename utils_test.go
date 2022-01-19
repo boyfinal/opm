@@ -29,7 +29,7 @@ func TestGenerateRandBytes(t *testing.T) {
 	}
 }
 
-func TestXorBytes(t *testing.T) {
+func TestXOR(t *testing.T) {
 	strs := []struct {
 		a        []byte
 		b        []byte
@@ -41,7 +41,7 @@ func TestXorBytes(t *testing.T) {
 	}
 
 	for _, v := range strs {
-		if res := XorBytes(v.a, v.b); res != nil {
+		if res := Xor(v.a, v.b); res != nil {
 			if !bytes.Equal(res, v.expected) {
 				t.Fatalf("XorBytes failed to return the expected result: got %v want %v", res, v.expected)
 			}
@@ -89,22 +89,6 @@ func BenchmarkInArrayString(b *testing.B) {
 	s1 := "z"
 	for i := 0; i < b.N; i++ {
 		_ = InArrayString(ss, s1)
-	}
-}
-
-func BenchmarkInArrayString1(b *testing.B) {
-	ss := strings.Split(alphabet, "")
-	s1 := "z"
-	for i := 0; i < b.N; i++ {
-		_ = InArrayString1(ss, s1)
-	}
-}
-
-func BenchmarkInArrayString2(b *testing.B) {
-	ss := strings.Split(alphabet, "")
-	s1 := "z"
-	for i := 0; i < b.N; i++ {
-		_ = InArrayString2(ss, s1)
 	}
 }
 
