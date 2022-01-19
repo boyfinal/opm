@@ -1,7 +1,6 @@
 package csrf
 
 import (
-	"crypto/rand"
 	"crypto/subtle"
 	"encoding/base64"
 	"fmt"
@@ -51,7 +50,7 @@ func TemplateField(c opm.Context) template.HTML {
 // randomises the token on a per-request basis without breaking multiple browser
 // tabs/windows.
 func mask(realToken []byte) string {
-	otp, err := generateRandomBytes(tokenLength)
+	otp, err := opm.GenerateRandBytes(tokenLength)
 	if err != nil {
 		return ""
 	}
@@ -59,7 +58,7 @@ func mask(realToken []byte) string {
 	// XOR the OTP with the real token to generate a masked token. Append the
 	// OTP to the front of the masked token to allow unmasking in the subsequent
 	// request.
-	return base64.StdEncoding.EncodeToString(append(otp, xorToken(otp, realToken)...))
+	return base64.StdEncoding.EncodeToString(append(otp, opm.XorBytes(otp, realToken)...))
 }
 
 // unmask splits the issued token (one-time-pad + masked token) and returns the
@@ -75,7 +74,7 @@ func unmask(issued []byte) []byte {
 	masked := issued[:tokenLength]
 
 	// Unmask the token by XOR'ing it against the OTP used to mask it.
-	return xorToken(otp, masked)
+	return opm.XorBytes(otp, masked)
 }
 
 // requestToken returns the issued token (pad + masked token) from the HTTP POST
@@ -108,21 +107,6 @@ func (cs *csrf) requestToken(r *http.Request) []byte {
 	return decoded
 }
 
-// generateRandomBytes returns securely generated random bytes.
-// It will return an error if the system's secure random number generator
-// fails to function correctly.
-func generateRandomBytes(n int) ([]byte, error) {
-	b := make([]byte, n)
-	_, err := rand.Read(b)
-	// err == nil only if len(b) == n
-	if err != nil {
-		return nil, err
-	}
-
-	return b, nil
-
-}
-
 // sameOrigin returns true if URLs a and b share the same origin. The same
 // origin is defined as host (which includes the port) and scheme.
 func sameOrigin(a, b *url.URL) bool {
@@ -132,42 +116,5 @@ func sameOrigin(a, b *url.URL) bool {
 // compare securely (constant-time) compares the unmasked token from the request
 // against the real token from the session.
 func compareTokens(a, b []byte) bool {
-	// This is required as subtle.ConstantTimeCompare does not check for equal
-	// lengths in Go versions prior to 1.3.
-	if len(a) != len(b) {
-		return false
-	}
-
 	return subtle.ConstantTimeCompare(a, b) == 1
-}
-
-// xorToken XORs tokens ([]byte) to provide unique-per-request CSRF tokens. It
-// will return a masked token if the base token is XOR'ed with a one-time-pad.
-// An unmasked token will be returned if a masked token is XOR'ed with the
-// one-time-pad used to mask it.
-func xorToken(a, b []byte) []byte {
-	n := len(a)
-	if len(b) < n {
-		n = len(b)
-	}
-
-	res := make([]byte, n)
-
-	for i := 0; i < n; i++ {
-		res[i] = a[i] ^ b[i]
-	}
-
-	return res
-}
-
-// contains is a helper function to check if a string exists in a slice - e.g.
-// whether a HTTP method exists in a list of safe methods.
-func contains(vals []string, s string) bool {
-	for _, v := range vals {
-		if v == s {
-			return true
-		}
-	}
-
-	return false
 }

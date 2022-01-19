@@ -98,7 +98,7 @@ func CSRF(config CSRFConfig) opm.MiddlewareFunc {
 
 			c.Set("csrf", mask(realToken))
 
-			if !opm.Contains(safeMethods, c.Request().Method) {
+			if !opm.InArrayString(safeMethods, c.Request().Method) {
 				if realToken == nil {
 					return c.String(http.StatusBadRequest, "invalid csrf token")
 				}
