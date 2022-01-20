@@ -73,7 +73,7 @@ func BenchmarkFile(b *testing.B) {
 	b.ReportAllocs()
 
 	for i := 0; i < b.N; i++ {
-		c.File("demo.jpg")
+		c.File("_fixture/assets/demo.jpg")
 	}
 }
 
@@ -214,7 +214,7 @@ func TestContext(t *testing.T) {
 	// File
 	rec = httptest.NewRecorder()
 	c = o.NewContext(rec, req).(*context)
-	err = c.File("_fixtrue/assets/demo.jpg")
+	err = c.File("_fixture/assets/demo.jpg")
 	if assertNoError(t, err) {
 		assertContentTypeBody(t, rec, "image/jpeg")
 		if rec.Body.Len() != 98709 {
