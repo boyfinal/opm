@@ -3,9 +3,12 @@ package opm
 import (
 	"bytes"
 	"crypto/rand"
+	"fmt"
 	"io"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 var alphabet = "aaaaaaaaaaaaaaaaaaaaabcdefghijklmnopqrstuvwxyz"
@@ -24,9 +27,7 @@ func TestGenerateRandBytes(t *testing.T) {
 	}()
 
 	b, err := GenerateRandBytes(32)
-	if err == nil {
-		t.Fatalf("generateRandomBytes did not report a short read: only read %d bytes", len(b))
-	}
+	assert.NotNil(t, err, fmt.Sprintf("generateRandomBytes did not report a short read: only read %d bytes", len(b)))
 }
 
 func TestXOR(t *testing.T) {
@@ -53,9 +54,7 @@ func TestStrcon(t *testing.T) {
 	ss := []string{"a", "b", "c", "d", "e"}
 	expected := strings.Join(ss, "")
 	res := Strcon(ss...)
-	if res != expected {
-		t.Fatalf("Strcon failed to concat %v: got %v want %v", strings.Join(ss, ","), res, expected)
-	}
+	assert.Equal(t, res, expected, fmt.Sprintf("Strcon failed to concat %v: got %v want %v", strings.Join(ss, ","), res, expected))
 }
 
 func BenchmarkStrcon(b *testing.B) {
@@ -68,13 +67,11 @@ func BenchmarkStrcon(b *testing.B) {
 
 func TestContains(t *testing.T) {
 	ss := []string{"a", "b", "c", "d", "e"}
-	if !Contains(ss, "a") {
-		t.Fatalf("Strcon failed to contains 'a' in %v", ss)
-	}
 
-	if Contains(ss, "f") {
-		t.Fatalf("Strcon failed to contains 'f' in %v", ss)
-	}
+	assert := assert.New(t)
+
+	assert.Equal(Contains(ss, "a"), true, fmt.Sprintf("Strcon failed to contains 'a' in %v", ss))
+	assert.NotEqual(Contains(ss, "f"), true, fmt.Sprintf("Strcon failed to contains 'f' in %v", ss))
 }
 
 func BenchmarkContains(b *testing.B) {
