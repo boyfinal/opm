@@ -222,3 +222,48 @@ func TestContext(t *testing.T) {
 		}
 	}
 }
+
+func BenchmarkNoContent(b *testing.B) {
+	r := httptest.NewRequest(http.MethodGet, "/", nil)
+	w := httptest.NewRecorder()
+
+	router := NewRouter()
+	c := router.NewContext(w, r).(*context)
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for i := 0; i < b.N; i++ {
+		c.NoContent(http.StatusOK)
+	}
+}
+
+func BenchmarkBlob(b *testing.B) {
+	r := httptest.NewRequest(http.MethodGet, "/", nil)
+	w := httptest.NewRecorder()
+
+	router := NewRouter()
+	c := router.NewContext(w, r).(*context)
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for i := 0; i < b.N; i++ {
+		c.Blob(http.StatusOK, MIMETextPlainCharsetUTF8, []byte("opm"))
+	}
+}
+
+func BenchmarkString(b *testing.B) {
+	r := httptest.NewRequest(http.MethodGet, "/", nil)
+	w := httptest.NewRecorder()
+
+	router := NewRouter()
+	c := router.NewContext(w, r).(*context)
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for i := 0; i < b.N; i++ {
+		c.String(http.StatusOK, "opm")
+	}
+}
