@@ -2,13 +2,16 @@ package opm
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
-func TestEcho(t *testing.T) {
+func TestOPM(t *testing.T) {
 	r := NewRouter()
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	rec := httptest.NewRecorder()
@@ -19,24 +22,21 @@ func TestEcho(t *testing.T) {
 
 	// DefaultHTTPErrorHandler
 	r.DefaultHTTPErrorHandler(errors.New("error"), c)
-	if http.StatusInternalServerError != rec.Code {
-		t.Error(rec.Code)
-	}
+
+	assert.Equal(t, http.StatusInternalServerError, rec.Code, fmt.Sprintf("status %d != %d", http.StatusInternalServerError, rec.Code))
 }
 
-func TestEchoNotFound(t *testing.T) {
+func TestOPMNotFound(t *testing.T) {
 	r := NewRouter()
 
 	req := httptest.NewRequest(http.MethodGet, "/tests", nil)
 	rec := httptest.NewRecorder()
 	r.ServeHTTP(rec, req)
 
-	if rec.Code != http.StatusNotFound {
-		t.Error(rec.Code)
-	}
+	assert.Equal(t, http.StatusNotFound, rec.Code, fmt.Sprintf("status %d != %d", http.StatusNotFound, rec.Code))
 }
 
-func TestEchoNotAllow(t *testing.T) {
+func TestOPMNotAllow(t *testing.T) {
 	r := NewRouter()
 
 	r.GET("/test", HandlerFunc(func(c Context) error {
@@ -47,9 +47,7 @@ func TestEchoNotAllow(t *testing.T) {
 	rec := httptest.NewRecorder()
 	r.ServeHTTP(rec, req)
 
-	if rec.Code != http.StatusMethodNotAllowed {
-		t.Error(rec.Code)
-	}
+	assert.Equal(t, http.StatusMethodNotAllowed, rec.Code, fmt.Sprintf("status %d != %d", http.StatusMethodNotAllowed, rec.Code))
 }
 
 func TestGet(t *testing.T) {
@@ -97,9 +95,8 @@ func testMethod(t *testing.T, method, path string, o *Router) {
 	reflect.ValueOf(i).MethodByName(method).Call([]reflect.Value{p, h})
 
 	code, body := request(method, path, o)
-	if method != body {
-		t.Error(code, body, method)
-	}
+
+	assert.Equal(t, body, method, fmt.Sprintf("code: %d, method: %s, body: %s", code, body, method))
 }
 
 func request(method, path string, o *Router) (int, string) {
