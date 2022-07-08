@@ -12,9 +12,9 @@ import (
 type Template struct {
 	sync.Mutex
 
-	dirbase   string
-	dirview   string
-	dirlayout string
+	dirBase   string
+	dirView   string
+	dirLayout string
 	templates map[string]*template.Template
 }
 
@@ -22,20 +22,20 @@ var mainTmpl = `{{ define "main" }}{{ template "base" . }}{{end}}`
 
 func New(dir string) *Template {
 	return &Template{
-		dirbase:   dir,
-		dirview:   "pages",
-		dirlayout: "layout",
+		dirBase:   dir,
+		dirView:   "pages",
+		dirLayout: "layout",
 		templates: make(map[string]*template.Template),
 	}
 }
 
-func (t *Template) Dirview(name string) *Template {
-	t.dirview = name
+func (t *Template) DirView(name string) *Template {
+	t.dirView = name
 	return t
 }
 
-func (t *Template) Dirlayout(name string) *Template {
-	t.dirlayout = name
+func (t *Template) DirLayout(name string) *Template {
+	t.dirLayout = name
 	return t
 }
 
@@ -58,7 +58,7 @@ func (t *Template) Load(name string) error {
 
 	var files []string
 
-	pattern := filepath.Clean(fmt.Sprintf("%s/%s/*.html", t.dirbase, t.dirlayout))
+	pattern := filepath.Clean(fmt.Sprintf("%s/%s/*.html", t.dirBase, t.dirLayout))
 	layouts, err := filepath.Glob(pattern)
 	if err != nil {
 		return err
@@ -78,7 +78,7 @@ func (t *Template) Load(name string) error {
 		return err
 	}
 
-	file := filepath.Clean(fmt.Sprintf("%s/%s/%s", t.dirbase, t.dirview, name))
+	file := filepath.Clean(fmt.Sprintf("%s/%s/%s", t.dirBase, t.dirView, name))
 	if _, err := os.Stat(file); err != nil {
 		return err
 	}
@@ -96,6 +96,6 @@ func (t *Template) Load(name string) error {
 	return nil
 }
 
-func (t *Template) Refesh() {
+func (t *Template) Refresh() {
 	t.templates = make(map[string]*template.Template)
 }

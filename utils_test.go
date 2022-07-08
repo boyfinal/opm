@@ -50,17 +50,17 @@ func TestXOR(t *testing.T) {
 	}
 }
 
-func TestStrcon(t *testing.T) {
+func TestStrConcat(t *testing.T) {
 	ss := []string{"a", "b", "c", "d", "e"}
 	expected := strings.Join(ss, "")
-	res := Strcon(ss...)
-	assert.Equal(t, res, expected, fmt.Sprintf("Strcon failed to concat %v: got %v want %v", strings.Join(ss, ","), res, expected))
+	res := StrConcat(ss...)
+	assert.Equal(t, res, expected, fmt.Sprintf("StrConcat failed to concat %v: got %v want %v", strings.Join(ss, ","), res, expected))
 }
 
 func BenchmarkStrcon(b *testing.B) {
 	ss := []string{"a", "b", "c", "d", "e"}
 	for i := 0; i < b.N; i++ {
-		s := Strcon(ss...)
+		s := StrConcat(ss...)
 		_ = s
 	}
 }
@@ -70,8 +70,8 @@ func TestContains(t *testing.T) {
 
 	assert := assert.New(t)
 
-	assert.Equal(Contains(ss, "a"), true, fmt.Sprintf("Strcon failed to contains 'a' in %v", ss))
-	assert.NotEqual(Contains(ss, "f"), true, fmt.Sprintf("Strcon failed to contains 'f' in %v", ss))
+	assert.Equal(Contains(ss, "a"), true, fmt.Sprintf("StrConcat failed to contains 'a' in %v", ss))
+	assert.NotEqual(Contains(ss, "f"), true, fmt.Sprintf("StrConcat failed to contains 'f' in %v", ss))
 }
 
 func BenchmarkContains(b *testing.B) {
@@ -90,7 +90,7 @@ func BenchmarkInArrayString(b *testing.B) {
 }
 
 func TestNumFormat(t *testing.T) {
-	intest := []struct {
+	inTest := []struct {
 		a        interface{}
 		expected string
 	}{
@@ -116,7 +116,7 @@ func TestNumFormat(t *testing.T) {
 		{nil, ""},
 	}
 
-	for _, v := range intest {
+	for _, v := range inTest {
 		if res := NumFormat(v.a); res != v.expected {
 			t.Fatalf("NumFormat failed to convert number %v to string: got %v want %v", v.a, res, v.expected)
 		}

@@ -10,7 +10,7 @@ type (
 		err         error
 		handler     Handler
 		reg         *routeRegexp
-		middlewares []MiddlewareFunc
+		middleware  []MiddlewareFunc
 		namedRoutes map[string]*Route
 	}
 )
@@ -71,7 +71,7 @@ func (r *Route) HandlerFunc(f func(Context) error) *Route {
 }
 
 func (r *Route) Use(m ...MiddlewareFunc) *Route {
-	r.middlewares = append(r.middlewares, m...)
+	r.middleware = append(r.middleware, m...)
 	return r
 }
 

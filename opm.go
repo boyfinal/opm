@@ -234,7 +234,7 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, rq *http.Request) {
 
 // NewRoute create new a Route
 func (r *Router) NewRoute() *Route {
-	route := &Route{namedRoutes: r.namedRoutes, middlewares: make([]MiddlewareFunc, 0)}
+	route := &Route{namedRoutes: r.namedRoutes, middleware: make([]MiddlewareFunc, 0)}
 	r.routes = append(r.routes, route)
 	return route
 }
@@ -265,8 +265,9 @@ func (r *Router) Match(req *http.Request, match *RouteMatch) bool {
 		match.Route = route
 		match.Handler = route.handler
 		match.MatchErr = route.err
-		if len(route.middlewares) > 0 {
-			match.Handler = applyMiddleware(match.Handler, route.middlewares...)
+
+		if len(route.middleware) > 0 {
+			match.Handler = applyMiddleware(match.Handler, route.middleware...)
 		}
 
 		match.PNames = route.reg.VarsN
@@ -380,10 +381,10 @@ func (r *Router) static(path, root string, get func(string, Handler, ...Middlewa
 	})
 
 	if !strings.HasSuffix(path, "/") {
-		path = Strcon(path, "/")
+		path = StrConcat(path, "/")
 	}
 
-	path = Strcon(path, "{path:.*}")
+	path = StrConcat(path, "{path:.*}")
 	return get(path, f)
 }
 
@@ -439,7 +440,7 @@ func (r *Router) DefaultHTTPErrorHandler(err error, c Context) {
 }
 
 func (r *Router) Group(prefix string, m ...MiddlewareFunc) *Group {
-	return &Group{router: r, prefix: prefix, middlewares: m}
+	return &Group{router: r, prefix: prefix, middleware: m}
 }
 
 func NewHTTPError(code int, message ...interface{}) *HTTPError {

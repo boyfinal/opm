@@ -3,9 +3,9 @@ package opm
 import "net/http"
 
 type Group struct {
-	prefix      string
-	middlewares []MiddlewareFunc
-	router      *Router
+	prefix     string
+	middleware []MiddlewareFunc
+	router     *Router
 }
 
 func (g *Group) Prefix(prefix string) *Group {
@@ -68,16 +68,24 @@ func (g *Group) Add(method, path string, h Handler, m ...MiddlewareFunc) *Route 
 }
 
 func (g *Group) add(method, path string, h Handler, middleware ...MiddlewareFunc) *Route {
-	m := make([]MiddlewareFunc, 0, len(g.middlewares)+len(middleware))
-	m = append(m, g.middlewares...)
+	m := make([]MiddlewareFunc, 0, len(g.middleware)+len(middleware))
+	m = append(m, g.middleware...)
 	m = append(m, middleware...)
 	return g.router.Path(g.prefix + path).Handler(h).Method(method).Use(m...)
 }
 
-func (g *Group) Group(prefix string, middlewares ...MiddlewareFunc) *Group {
-	m := make([]MiddlewareFunc, 0, len(g.middlewares)+len(middlewares))
-	m = append(m, g.middlewares...)
-	m = append(m, middlewares...)
+func (g *Group) File(path, file string) {
+	h := HandlerFunc(func(c Context) error {
+		return c.File(file)
+	})
+
+	g.Path(g.prefix + path).Handler(h).Method(http.MethodGet)
+}
+
+func (g *Group) Group(prefix string, middleware ...MiddlewareFunc) *Group {
+	m := make([]MiddlewareFunc, 0, len(g.middleware)+len(middleware))
+	m = append(m, g.middleware...)
+	m = append(m, middleware...)
 	g.router.Group(g.prefix+prefix, m...)
 	return g.router.Group(g.prefix+prefix, m...)
 }
@@ -88,4 +96,10 @@ func (r *Router) Prefix(prefix string) *Group {
 
 func (r *Router) Middleware(m ...MiddlewareFunc) *Group {
 	return r.Group("", m...)
+}
+
+func (g *Group) Routes(f func(*Group) *Group) *Group {
+	f(g)
+
+	return g
 }

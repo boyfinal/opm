@@ -33,8 +33,8 @@ func Xor(a, b []byte) []byte {
 	return res
 }
 
-// Strcon concat multiple string
-func Strcon(ss ...string) string {
+// StrConcat concat multiple string
+func StrConcat(ss ...string) string {
 	var b bytes.Buffer
 	for _, s := range ss {
 		b.WriteString(s)
