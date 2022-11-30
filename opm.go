@@ -456,10 +456,11 @@ func (e *HTTPError) Error() string {
 }
 
 func (core *Core) Run(addr string) {
-	s := &Server{Addr: addr}
+	s := &Server{Addr: addr, Handler: core}
 	s.Run()
 }
 
 func (core *Core) RunServer(s *Server) {
+	s.Handler = core
 	s.Run()
 }
