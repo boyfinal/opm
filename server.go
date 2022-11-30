@@ -42,6 +42,10 @@ func (s *Server) Run() {
 		s.Addr = fmt.Sprintf("%s:%d", httphost, httpport)
 	}
 
+	if s.Name == "" {
+		s.Name = s.Addr
+	}
+
 	if s.WriteTimeout < 1 {
 		s.WriteTimeout = WriteTimeout
 	}

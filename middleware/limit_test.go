@@ -10,7 +10,7 @@ import (
 )
 
 func TestLimiter(t *testing.T) {
-	or := opm.NewRouter()
+	or := opm.Make()
 
 	mw := ProtectLimiter(1)
 	handler := func() opm.Handler {

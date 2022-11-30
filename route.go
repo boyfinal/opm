@@ -13,6 +13,9 @@ type (
 		middleware  []MiddlewareFunc
 		namedRoutes map[string]*Route
 	}
+
+	RouteList  []*Route
+	RouteNames map[string]*Route
 )
 
 // Method sets type method `*Route`

@@ -10,7 +10,7 @@ import (
 )
 
 func TestGroup(t *testing.T) {
-	g := NewRouter().Group("/group")
+	g := Make().Group("/group")
 	h := HandlerFunc(func(Context) error { return nil })
 	g.CONNECT("/", h)
 	g.DELETE("/", h)
@@ -26,7 +26,7 @@ func TestGroup(t *testing.T) {
 }
 
 func TestGroupFile(t *testing.T) {
-	r := NewRouter()
+	r := Make()
 	g := r.Group("/group")
 
 	g.File("/demo", "_fixture/assets/demo.jpg")

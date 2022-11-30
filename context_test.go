@@ -21,7 +21,7 @@ func BenchmarkJSON(b *testing.B) {
 	r := httptest.NewRequest(http.MethodGet, "/", nil)
 	w := httptest.NewRecorder()
 
-	router := NewRouter()
+	router := Make()
 	c := router.NewContext(w, r).(*context)
 
 	b.ResetTimer()
@@ -36,7 +36,7 @@ func BenchmarkHTML(b *testing.B) {
 	r := httptest.NewRequest(http.MethodGet, "/", nil)
 	w := httptest.NewRecorder()
 
-	s := NewRouter()
+	s := Make()
 	c := s.NewContext(w, r).(*context)
 
 	b.ResetTimer()
@@ -66,7 +66,7 @@ func BenchmarkFile(b *testing.B) {
 	r := httptest.NewRequest(http.MethodGet, "/", nil)
 	w := httptest.NewRecorder()
 
-	s := NewRouter()
+	s := Make()
 	c := s.NewContext(w, r).(*context)
 
 	b.ResetTimer()
@@ -126,7 +126,7 @@ func (t *Template) Render(w io.Writer, name string, data interface{}) error {
 }
 
 func TestContext(t *testing.T) {
-	o := NewRouter()
+	o := Make()
 	req := httptest.NewRequest("POST", "/", strings.NewReader("userJSON"))
 	rec := httptest.NewRecorder()
 	c := o.NewContext(rec, req)
@@ -227,7 +227,7 @@ func BenchmarkNoContent(b *testing.B) {
 	r := httptest.NewRequest(http.MethodGet, "/", nil)
 	w := httptest.NewRecorder()
 
-	router := NewRouter()
+	router := Make()
 	c := router.NewContext(w, r).(*context)
 
 	b.ResetTimer()
@@ -242,7 +242,7 @@ func BenchmarkBlob(b *testing.B) {
 	r := httptest.NewRequest(http.MethodGet, "/", nil)
 	w := httptest.NewRecorder()
 
-	router := NewRouter()
+	router := Make()
 	c := router.NewContext(w, r).(*context)
 
 	b.ResetTimer()
@@ -257,7 +257,7 @@ func BenchmarkString(b *testing.B) {
 	r := httptest.NewRequest(http.MethodGet, "/", nil)
 	w := httptest.NewRecorder()
 
-	router := NewRouter()
+	router := Make()
 	c := router.NewContext(w, r).(*context)
 
 	b.ResetTimer()

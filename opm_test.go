@@ -12,7 +12,7 @@ import (
 )
 
 func TestOPM(t *testing.T) {
-	r := NewRouter()
+	r := Make()
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	rec := httptest.NewRecorder()
 	c := r.NewContext(rec, req)
@@ -27,7 +27,7 @@ func TestOPM(t *testing.T) {
 }
 
 func TestOPMNotFound(t *testing.T) {
-	r := NewRouter()
+	r := Make()
 
 	req := httptest.NewRequest(http.MethodGet, "/tests", nil)
 	rec := httptest.NewRecorder()
@@ -37,7 +37,7 @@ func TestOPMNotFound(t *testing.T) {
 }
 
 func TestOPMNotAllow(t *testing.T) {
-	r := NewRouter()
+	r := Make()
 
 	r.GET("/test", HandlerFunc(func(c Context) error {
 		return c.String(http.StatusOK, "OK")
@@ -51,58 +51,58 @@ func TestOPMNotAllow(t *testing.T) {
 }
 
 func TestGet(t *testing.T) {
-	o := NewRouter()
+	o := Make()
 	testMethod(t, http.MethodGet, "/test", o)
 }
 
 func TestHead(t *testing.T) {
-	o := NewRouter()
+	o := Make()
 	testMethod(t, http.MethodHead, "/test", o)
 }
 
 func TestPost(t *testing.T) {
-	o := NewRouter()
+	o := Make()
 	testMethod(t, http.MethodPost, "/test", o)
 }
 
 func TestPut(t *testing.T) {
-	o := NewRouter()
+	o := Make()
 	testMethod(t, http.MethodPut, "/test", o)
 }
 
 func TestPatch(t *testing.T) {
-	o := NewRouter()
+	o := Make()
 	testMethod(t, http.MethodPatch, "/test", o)
 }
 
 func TestDelete(t *testing.T) {
-	o := NewRouter()
+	o := Make()
 	testMethod(t, http.MethodDelete, "/test", o)
 }
 
 func TestConnect(t *testing.T) {
-	o := NewRouter()
+	o := Make()
 	testMethod(t, http.MethodConnect, "/test", o)
 }
 
-func testMethod(t *testing.T, method, path string, o *Router) {
+func testMethod(t *testing.T, method, path string, core *Core) {
 	p := reflect.ValueOf(path)
 	h := reflect.ValueOf(HandlerFunc(func(c Context) error {
 		return c.String(http.StatusOK, method)
 	}))
 
-	i := interface{}(o)
+	i := interface{}(core)
 	reflect.ValueOf(i).MethodByName(method).Call([]reflect.Value{p, h})
 
-	code, body := request(method, path, o)
+	code, body := request(method, path, core)
 
 	assert.Equal(t, body, method, fmt.Sprintf("code: %d, method: %s, body: %s", code, body, method))
 }
 
-func request(method, path string, o *Router) (int, string) {
+func request(method, path string, core *Core) (int, string) {
 	req := httptest.NewRequest(method, path, nil)
 	rec := httptest.NewRecorder()
 
-	o.ServeHTTP(rec, req)
+	core.ServeHTTP(rec, req)
 	return rec.Code, rec.Body.String()
 }

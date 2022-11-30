@@ -9,7 +9,7 @@ import (
 )
 
 func TestRateLimiter(t *testing.T) {
-	or := opm.NewRouter()
+	or := opm.Make()
 
 	mw := RateLimiter(1, 3)
 	handler := func() opm.Handler {

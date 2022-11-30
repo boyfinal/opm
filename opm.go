@@ -73,14 +73,14 @@ var (
 )
 
 type (
-	Router struct {
+	Core struct {
 		sync.Mutex
 
 		Logger      Logger
 		Renderer    Renderer
 		pool        sync.Pool
-		namedRoutes map[string]*Route
-		routes      []*Route
+		namedRoutes RouteNames
+		routes      RouteList
 		middleware  []MiddlewareFunc
 
 		NotFoundHandler         Handler
@@ -137,62 +137,65 @@ func (f HandlerFunc) Run(c Context) error {
 }
 
 var (
+	// Default handler not found
 	notFoundHandler = HandlerFunc(func(c Context) error {
 		return c.String(http.StatusNotFound, "404 page not found")
 	})
 
+	// Default handler not allowed
 	methodNotAllowedHandler = HandlerFunc(func(c Context) error {
 		return c.NoContent(http.StatusMethodNotAllowed)
 	})
 
+	// Default handler error
 	serverErrorHandler = HandlerFunc(func(c Context) error {
 		return c.NoContent(http.StatusInternalServerError)
 	})
 )
 
 // New returns a Server.
-func NewRouter() *Router {
-	r := &Router{
+func Make() *Core {
+	core := &Core{
 		namedRoutes: make(map[string]*Route),
 	}
 
-	r.pool.New = func() interface{} {
-		return r.NewContext(nil, nil)
+	core.pool.New = func() interface{} {
+		return core.NewContext(nil, nil)
 	}
 
-	return r
+	return core
 }
 
-func (r *Router) SetLog(logger Logger) *Router {
-	r.Logger = logger
-	return r
+func (core *Core) SetLog(logger Logger) *Core {
+	core.Logger = logger
+	return core
 }
 
 // NewContext returns a Context instance.
-func (r *Router) NewContext(w http.ResponseWriter, req *http.Request) Context {
+func (core *Core) NewContext(w http.ResponseWriter, req *http.Request) Context {
 	return &context{
 		request:  req,
 		response: w,
-		renderer: r.Renderer,
-		logger:   r.Logger,
+		renderer: core.Renderer,
+		logger:   core.Logger,
 		body:     make(map[string]interface{}),
 	}
 }
 
 // Use adds middleware
-func (r *Router) Use(m ...MiddlewareFunc) {
-	r.middleware = append(r.middleware, m...)
+func (core *Core) Use(m ...MiddlewareFunc) {
+	core.middleware = append(core.middleware, m...)
 }
 
-func (r *Router) ServeHTTP(w http.ResponseWriter, rq *http.Request) {
-	c := r.pool.Get().(*context)
+func (core *Core) ServeHTTP(w http.ResponseWriter, rq *http.Request) {
+	c := core.pool.Get().(*context)
 	c.Reset(w, rq)
 
 	var h Handler
 	var match RouteMatch
-	if r.Match(rq, &match) {
+	if core.Match(rq, &match) {
 		h = match.Handler
-		h = applyMiddleware(h, r.middleware...)
+		h = applyMiddleware(h, core.middleware...)
 
 		c.SetRoute(match.Route)
 		c.SetParamNames(match.PNames...)
@@ -209,46 +212,46 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, rq *http.Request) {
 
 	if err := h.Run(c); err != nil {
 		if err == ErrNotFound {
-			if r.NotFoundHandler != nil {
-				r.NotFoundHandler.Run(c)
+			if core.NotFoundHandler != nil {
+				core.NotFoundHandler.Run(c)
 			} else {
 				notFoundHandler.Run(c)
 			}
 		} else {
-			if r.Logger != nil {
-				r.Logger.Error(err)
+			if core.Logger != nil {
+				core.Logger.Error(err)
 			} else {
 				fmt.Println(err)
 			}
 
-			if r.SystemErrorHandler != nil {
-				r.SystemErrorHandler.Run(c)
+			if core.SystemErrorHandler != nil {
+				core.SystemErrorHandler.Run(c)
 			} else {
 				serverErrorHandler.Run(c)
 			}
 		}
 	}
 
-	r.pool.Put(c)
+	core.pool.Put(c)
 }
 
 // NewRoute create new a Route
-func (r *Router) NewRoute() *Route {
-	route := &Route{namedRoutes: r.namedRoutes, middleware: make([]MiddlewareFunc, 0)}
-	r.routes = append(r.routes, route)
+func (core *Core) NewRoute() *Route {
+	route := &Route{namedRoutes: core.namedRoutes, middleware: make([]MiddlewareFunc, 0)}
+	core.routes = append(core.routes, route)
 	return route
 }
 
-func (r *Router) Name(name string) *Route {
-	return r.NewRoute().Name(name)
+func (core *Core) Name(name string) *Route {
+	return core.NewRoute().Name(name)
 }
 
-func (r *Router) Path(path string) *Route {
-	return r.NewRoute().Path(path)
+func (core *Core) Path(path string) *Route {
+	return core.NewRoute().Path(path)
 }
 
-func (r *Router) Match(req *http.Request, match *RouteMatch) bool {
-	for _, route := range r.routes {
+func (core *Core) Match(req *http.Request, match *RouteMatch) bool {
+	for _, route := range core.routes {
 		if route.err != nil || route.reg == nil {
 			continue
 		}
@@ -282,16 +285,16 @@ func (r *Router) Match(req *http.Request, match *RouteMatch) bool {
 	}
 
 	if match.MatchErr == ErrMethodNotAllowed {
-		if r.MethodNotAllowedHandler != nil {
-			match.Handler = r.MethodNotAllowedHandler
+		if core.MethodNotAllowedHandler != nil {
+			match.Handler = core.MethodNotAllowedHandler
 			return true
 		}
 
 		return false
 	}
 
-	if r.NotFoundHandler != nil {
-		match.Handler = r.NotFoundHandler
+	if core.NotFoundHandler != nil {
+		match.Handler = core.NotFoundHandler
 		match.MatchErr = ErrNotFound
 		return true
 	}
@@ -300,66 +303,66 @@ func (r *Router) Match(req *http.Request, match *RouteMatch) bool {
 	return false
 }
 
-func (r *Router) GET(path string, h Handler, m ...MiddlewareFunc) *Route {
-	return r.add(http.MethodGet, path, h, m...)
+func (core *Core) GET(path string, h Handler, m ...MiddlewareFunc) *Route {
+	return core.add(http.MethodGet, path, h, m...)
 }
 
-func (r *Router) HEAD(path string, h Handler, m ...MiddlewareFunc) *Route {
-	return r.add(http.MethodHead, path, h, m...)
+func (core *Core) HEAD(path string, h Handler, m ...MiddlewareFunc) *Route {
+	return core.add(http.MethodHead, path, h, m...)
 }
 
-func (r *Router) POST(path string, h Handler, m ...MiddlewareFunc) *Route {
-	return r.add(http.MethodPost, path, h, m...)
+func (core *Core) POST(path string, h Handler, m ...MiddlewareFunc) *Route {
+	return core.add(http.MethodPost, path, h, m...)
 }
 
-func (r *Router) PUT(path string, h Handler, m ...MiddlewareFunc) *Route {
-	return r.add(http.MethodPut, path, h, m...)
+func (core *Core) PUT(path string, h Handler, m ...MiddlewareFunc) *Route {
+	return core.add(http.MethodPut, path, h, m...)
 }
 
-func (r *Router) PATCH(path string, h Handler, m ...MiddlewareFunc) *Route {
-	return r.add(http.MethodPatch, path, h, m...)
+func (core *Core) PATCH(path string, h Handler, m ...MiddlewareFunc) *Route {
+	return core.add(http.MethodPatch, path, h, m...)
 }
 
-func (r *Router) DELETE(path string, h Handler, m ...MiddlewareFunc) *Route {
-	return r.add(http.MethodDelete, path, h, m...)
+func (core *Core) DELETE(path string, h Handler, m ...MiddlewareFunc) *Route {
+	return core.add(http.MethodDelete, path, h, m...)
 }
 
-func (r *Router) CONNECT(path string, h Handler, m ...MiddlewareFunc) *Route {
-	return r.add(http.MethodConnect, path, h, m...)
+func (core *Core) CONNECT(path string, h Handler, m ...MiddlewareFunc) *Route {
+	return core.add(http.MethodConnect, path, h, m...)
 }
 
-func (r *Router) OPTIONS(path string, h Handler, m ...MiddlewareFunc) *Route {
-	return r.add(http.MethodOptions, path, h, m...)
+func (core *Core) OPTIONS(path string, h Handler, m ...MiddlewareFunc) *Route {
+	return core.add(http.MethodOptions, path, h, m...)
 }
 
-func (r *Router) TRACE(path string, h Handler, m ...MiddlewareFunc) *Route {
-	return r.add(http.MethodTrace, path, h, m...)
+func (core *Core) TRACE(path string, h Handler, m ...MiddlewareFunc) *Route {
+	return core.add(http.MethodTrace, path, h, m...)
 }
 
-func (r *Router) Any(path string, h Handler, m ...MiddlewareFunc) []*Route {
+func (core *Core) Any(path string, h Handler, m ...MiddlewareFunc) []*Route {
 	routers := make([]*Route, len(methods))
 
 	for i, method := range methods {
-		routers[i] = r.add(method, path, h, m...)
+		routers[i] = core.add(method, path, h, m...)
 	}
 
 	return routers
 }
 
-func (r *Router) add(method, path string, h Handler, m ...MiddlewareFunc) *Route {
+func (core *Core) add(method, path string, h Handler, m ...MiddlewareFunc) *Route {
 	h = applyMiddleware(h, m...)
-	return r.Path(path).Handler(h).Method(method)
+	return core.Path(path).Handler(h).Method(method)
 }
 
-func (r *Router) Static(path, root string) *Route {
+func (core *Core) Static(path, root string) *Route {
 	if root == "" {
 		root = "."
 	}
 
-	return r.static(path, root, r.GET)
+	return core.static(path, root, core.GET)
 }
 
-func (r *Router) static(path, root string, get func(string, Handler, ...MiddlewareFunc) *Route) *Route {
+func (core *Core) static(path, root string, get func(string, Handler, ...MiddlewareFunc) *Route) *Route {
 	f := HandlerFunc(func(c Context) error {
 		p, err := url.PathUnescape(c.Param("path"))
 		if err != nil {
@@ -388,12 +391,12 @@ func (r *Router) static(path, root string, get func(string, Handler, ...Middlewa
 	return get(path, f)
 }
 
-func (r *Router) File(path, file string) {
+func (core *Core) File(path, file string) {
 	h := HandlerFunc(func(c Context) error {
 		return c.File(file)
 	})
 
-	r.Path(path).Handler(h).Method(http.MethodGet)
+	core.Path(path).Handler(h).Method(http.MethodGet)
 }
 
 func applyMiddleware(h Handler, middleware ...MiddlewareFunc) Handler {
@@ -412,7 +415,7 @@ func getPath(r *http.Request) string {
 	return path
 }
 
-func (r *Router) DefaultHTTPErrorHandler(err error, c Context) {
+func (core *Core) DefaultHTTPErrorHandler(err error, c Context) {
 	he, ok := err.(*HTTPError)
 	if !ok {
 		he = &HTTPError{
@@ -435,12 +438,8 @@ func (r *Router) DefaultHTTPErrorHandler(err error, c Context) {
 	}
 
 	if err != nil {
-		r.Logger.Error(err)
+		core.Logger.Error(err)
 	}
-}
-
-func (r *Router) Group(prefix string, m ...MiddlewareFunc) *Group {
-	return &Group{router: r, prefix: prefix, middleware: m}
 }
 
 func NewHTTPError(code int, message ...interface{}) *HTTPError {
@@ -454,4 +453,13 @@ func NewHTTPError(code int, message ...interface{}) *HTTPError {
 
 func (e *HTTPError) Error() string {
 	return fmt.Sprintf("code=%d, message=%v", e.Code, e.Message)
+}
+
+func (core *Core) Run(addr string) {
+	s := &Server{Addr: addr}
+	s.Run()
+}
+
+func (core *Core) RunServer(s *Server) {
+	s.Run()
 }

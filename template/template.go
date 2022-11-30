@@ -12,6 +12,7 @@ import (
 type Template struct {
 	sync.Mutex
 
+	FuncMap   template.FuncMap
 	dirBase   string
 	dirView   string
 	dirLayout string
@@ -26,6 +27,7 @@ func New(dir string) *Template {
 		dirView:   "pages",
 		dirLayout: "layout",
 		templates: make(map[string]*template.Template),
+		FuncMap:   template.FuncMap{},
 	}
 }
 
@@ -51,6 +53,10 @@ func (t *Template) Render(w io.Writer, name string, body interface{}) error {
 	return fmt.Errorf("the template %s does not exist", name)
 }
 
+func (t *Template) SetFuncMap(fnMap template.FuncMap) {
+	t.FuncMap = fnMap
+}
+
 func (t *Template) Load(name string) error {
 	if t.templates[name] != nil {
 		return nil
@@ -67,11 +73,15 @@ func (t *Template) Load(name string) error {
 	files = append(files, layouts...)
 
 	tmp := template.New("main")
-	tmp.Funcs(template.FuncMap{
+
+	// Add template func map basics
+	tmp = tmp.Funcs(template.FuncMap{
 		"raw":    rawhtml,
 		"format": format,
 		"add":    add,
 	})
+
+	tmp = tmp.Funcs(t.FuncMap)
 
 	tmp, err = tmp.Parse(mainTmpl)
 	if err != nil {

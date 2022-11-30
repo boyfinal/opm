@@ -9,7 +9,7 @@ import (
 )
 
 func TestRecover(t *testing.T) {
-	or := opm.NewRouter()
+	or := opm.Make()
 
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	rec := httptest.NewRecorder()
