@@ -14,7 +14,7 @@ func TestLimiter(t *testing.T) {
 
 	mw := ProtectLimiter(1)
 	handler := func() opm.Handler {
-		return opm.HandlerFunc(func(c opm.Context) error {
+		return opm.Handler(func(c opm.Context) error {
 			time.Sleep(1 * time.Second)
 			return c.String(http.StatusOK, "test")
 		})
@@ -37,7 +37,8 @@ func TestLimiter(t *testing.T) {
 			req.Header.Add(opm.HeaderXRealIP, tc.id)
 			rec := httptest.NewRecorder()
 			c := or.NewContext(rec, req)
-			mw.Middleware(handler()).Run(c)
+			h := mw.Middleware(handler())
+			h(c)
 			if tc.code != rec.Code {
 				t.Errorf("%v - %v", tc.code, rec.Code)
 			}

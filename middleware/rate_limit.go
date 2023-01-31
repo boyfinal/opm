@@ -34,7 +34,7 @@ func RateLimiter(rate rate.Limit, b int) *RateLimiterConfig {
 }
 
 func (m *RateLimiterConfig) Middleware(next opm.Handler) opm.Handler {
-	return opm.HandlerFunc(func(c opm.Context) error {
+	return opm.Handler(func(c opm.Context) error {
 		// Get the IP address for the current user.
 		ip := c.RealIP()
 		if ip == "" {
@@ -59,7 +59,7 @@ func (m *RateLimiterConfig) Middleware(next opm.Handler) opm.Handler {
 			return c.String(http.StatusTooManyRequests, http.StatusText(http.StatusTooManyRequests))
 		}
 
-		return next.Run(c)
+		return next(c)
 	})
 }
 

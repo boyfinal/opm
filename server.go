@@ -28,18 +28,18 @@ type Server struct {
 }
 
 func (s *Server) Run() {
-	httphost := DefaultHost
+	host := DefaultHost
 	if s.Host != "" {
-		httphost = s.Host
+		host = s.Host
 	}
 
-	httpport := DefaultPort
+	port := DefaultPort
 	if s.Port > 0 {
-		httpport = s.Port
+		port = s.Port
 	}
 
 	if s.Addr == "" {
-		s.Addr = fmt.Sprintf("%s:%d", httphost, httpport)
+		s.Addr = fmt.Sprintf("%s:%d", host, port)
 	}
 
 	if s.Name == "" {
@@ -83,7 +83,9 @@ func (s *Server) Run() {
 	ctx, cancel := sdtContext.WithTimeout(sdtContext.Background(), time.Second*15)
 	defer cancel()
 
-	srv.Shutdown(ctx)
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Panicf("Shutdown serve: %v\n", err)
+	}
+
 	log.Printf("shutdown serve: %s", s.Name)
-	os.Exit(0)
 }

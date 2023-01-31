@@ -11,7 +11,7 @@ import (
 
 func TestGroup(t *testing.T) {
 	g := Make().Group("/group")
-	h := HandlerFunc(func(Context) error { return nil })
+	h := func(Context) error { return nil }
 	g.CONNECT("/", h)
 	g.DELETE("/", h)
 	g.GET("/", h)

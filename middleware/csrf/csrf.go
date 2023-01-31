@@ -135,16 +135,16 @@ func Protect(authKey []byte, opts ...Option) func(opm.Handler) opm.Handler {
 			}
 		}
 
-		return cs
+		return cs.Handle
 	}
 }
 
 // Implements http.Handler for the csrf type.
-func (cs *csrf) Run(c opm.Context) error {
+func (cs *csrf) Handle(c opm.Context) error {
 	// Skip the check if directed to. This should always be a bool.
 	if skip, ok := c.Get(skipCheckKey).(bool); ok {
 		if skip {
-			return cs.h.Run(c)
+			return cs.h(c)
 		}
 	}
 
@@ -226,5 +226,5 @@ func (cs *csrf) Run(c opm.Context) error {
 	w.Header().Add("Vary", "Cookie")
 
 	// Call the wrapped handler/router on success.
-	return cs.h.Run(c)
+	return cs.h(c)
 }

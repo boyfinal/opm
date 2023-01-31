@@ -16,12 +16,12 @@ func TestRecover(t *testing.T) {
 
 	c := or.NewContext(rec, req)
 	h := Recover(func() opm.Handler {
-		return opm.HandlerFunc(func(c opm.Context) error {
+		return opm.Handler(func(c opm.Context) error {
 			panic("test")
 		})
 	}())
 
-	h.Run(c)
+	h(c)
 
 	if rec.Code != http.StatusInternalServerError {
 		t.Errorf("%v", rec.Code)

@@ -12,7 +12,7 @@ import (
 
 // Logger --
 func Logger(next opm.Handler) opm.Handler {
-	return opm.HandlerFunc(func(c opm.Context) error {
+	return opm.Handler(func(c opm.Context) error {
 		defer func() {
 			startedTime := time.Now()
 			randomNumber := rand.Intn(100000-1000) + 1000
@@ -22,6 +22,6 @@ func Logger(next opm.Handler) opm.Handler {
 			log.Println(requestID, c.Request().Method, c.Request().URL.Path, c.RealIP(), c.Request().UserAgent(), c.Route().GetName())
 		}()
 
-		return next.Run(c)
+		return next(c)
 	})
 }

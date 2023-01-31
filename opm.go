@@ -97,12 +97,7 @@ type (
 	}
 
 	// Handler a responds to an HTTP request
-	Handler interface {
-		Run(Context) error
-	}
-
-	// HandlerFunc defines a function to serve HTTP request
-	HandlerFunc func(Context) error
+	Handler func(Context) error
 
 	// MiddlewareFunc defines a function to process middleware
 	MiddlewareFunc func(Handler) Handler
@@ -132,25 +127,21 @@ const (
 	MIMEOctetStream                      = "application/octet-stream"
 )
 
-func (f HandlerFunc) Run(c Context) error {
-	return f(c)
-}
-
 var (
 	// Default handler not found
-	notFoundHandler = HandlerFunc(func(c Context) error {
+	notFoundHandler = func(c Context) error {
 		return c.String(http.StatusNotFound, "404 page not found")
-	})
+	}
 
 	// Default handler not allowed
-	methodNotAllowedHandler = HandlerFunc(func(c Context) error {
+	methodNotAllowedHandler = func(c Context) error {
 		return c.NoContent(http.StatusMethodNotAllowed)
-	})
+	}
 
 	// Default handler error
-	serverErrorHandler = HandlerFunc(func(c Context) error {
+	serverErrorHandler = func(c Context) error {
 		return c.NoContent(http.StatusInternalServerError)
-	})
+	}
 )
 
 // New returns a Server.
@@ -210,12 +201,12 @@ func (core *Core) ServeHTTP(w http.ResponseWriter, rq *http.Request) {
 		h = notFoundHandler
 	}
 
-	if err := h.Run(c); err != nil {
+	if err := h(c); err != nil {
 		if err == ErrNotFound {
 			if core.NotFoundHandler != nil {
-				core.NotFoundHandler.Run(c)
+				core.NotFoundHandler(c)
 			} else {
-				notFoundHandler.Run(c)
+				notFoundHandler(c)
 			}
 		} else {
 			if core.Logger != nil {
@@ -225,9 +216,9 @@ func (core *Core) ServeHTTP(w http.ResponseWriter, rq *http.Request) {
 			}
 
 			if core.SystemErrorHandler != nil {
-				core.SystemErrorHandler.Run(c)
+				core.SystemErrorHandler(c)
 			} else {
-				serverErrorHandler.Run(c)
+				serverErrorHandler(c)
 			}
 		}
 	}
@@ -363,7 +354,7 @@ func (core *Core) Static(path, root string) *Route {
 }
 
 func (core *Core) static(path, root string, get func(string, Handler, ...MiddlewareFunc) *Route) *Route {
-	f := HandlerFunc(func(c Context) error {
+	f := func(c Context) error {
 		p, err := url.PathUnescape(c.Param("path"))
 		if err != nil {
 			return err
@@ -381,7 +372,7 @@ func (core *Core) static(path, root string, get func(string, Handler, ...Middlew
 		}
 
 		return c.File(name)
-	})
+	}
 
 	if !strings.HasSuffix(path, "/") {
 		path = StrConcat(path, "/")
@@ -392,9 +383,9 @@ func (core *Core) static(path, root string, get func(string, Handler, ...Middlew
 }
 
 func (core *Core) File(path, file string) {
-	h := HandlerFunc(func(c Context) error {
+	h := func(c Context) error {
 		return c.File(file)
-	})
+	}
 
 	core.Path(path).Handler(h).Method(http.MethodGet)
 }

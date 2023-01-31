@@ -39,9 +39,9 @@ func TestOPMNotFound(t *testing.T) {
 func TestOPMNotAllow(t *testing.T) {
 	r := Make()
 
-	r.GET("/test", HandlerFunc(func(c Context) error {
+	r.GET("/test", func(c Context) error {
 		return c.String(http.StatusOK, "OK")
-	}))
+	})
 
 	req := httptest.NewRequest(http.MethodPost, "/test", nil)
 	rec := httptest.NewRecorder()
@@ -87,7 +87,7 @@ func TestConnect(t *testing.T) {
 
 func testMethod(t *testing.T, method, path string, core *Core) {
 	p := reflect.ValueOf(path)
-	h := reflect.ValueOf(HandlerFunc(func(c Context) error {
+	h := reflect.ValueOf(Handler(func(c Context) error {
 		return c.String(http.StatusOK, method)
 	}))
 

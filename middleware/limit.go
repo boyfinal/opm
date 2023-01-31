@@ -17,15 +17,15 @@ func ProtectLimiter(max int) *Limiter {
 }
 
 func (m *Limiter) Middleware(next opm.Handler) opm.Handler {
-	return opm.HandlerFunc(func(c opm.Context) error {
+	return opm.Handler(func(c opm.Context) error {
 		if m.MaxLimit == 0 {
-			return next.Run(c)
+			return next(c)
 		}
 
 		// Get the IP address for the current user.
 		ip := c.RealIP()
 		if ip == "" {
-			return next.Run(c)
+			return next(c)
 		}
 
 		m.IPCount[ip]++
@@ -39,6 +39,6 @@ func (m *Limiter) Middleware(next opm.Handler) opm.Handler {
 			return c.String(http.StatusTooManyRequests, http.StatusText(http.StatusTooManyRequests))
 		}
 
-		return next.Run(c)
+		return next(c)
 	})
 }

@@ -87,7 +87,8 @@ func Contains(arr interface{}, in interface{}) bool {
 	return false
 }
 
-// NumFormat convert a number to string
+// NumFormat is a function that takes in a variable of type interface{}
+// and returns a string representation of that variable.
 func NumFormat(v interface{}) string {
 	switch s := v.(type) {
 	case int:
@@ -121,6 +122,8 @@ func NumFormat(v interface{}) string {
 	}
 }
 
+// func lastChar returns the last character of a string
+// if the provided string is an empty string, it will panic
 func lastChar(str string) uint8 {
 	if str == "" {
 		panic("The length of the string can't be 0")
@@ -128,15 +131,17 @@ func lastChar(str string) uint8 {
 	return str[len(str)-1]
 }
 
+// joinPaths joins absolutePath and relativePath and returns the resulting absolute path
+// Function assumes that if relativePath has a trailing slash, the final path should have a trailing slash as well
 func joinPaths(absolutePath, relativePath string) string {
 	if relativePath == "" {
-		return absolutePath
+		return absolutePath // return absolutePath if relativePath is empty
 	}
 
-	finalPath := path.Join(absolutePath, relativePath)
-	if lastChar(relativePath) == '/' && lastChar(finalPath) != '/' {
-		return finalPath + "/"
+	finalPath := path.Join(absolutePath, relativePath)               // join absolutePath and relativePath
+	if lastChar(relativePath) == '/' && lastChar(finalPath) != '/' { // if last char in relative path is a '/' but finalPath's last char is not
+		return finalPath + "/" // add a '/' at the end of finalPath
 	}
 
-	return finalPath
+	return finalPath // return final path
 }

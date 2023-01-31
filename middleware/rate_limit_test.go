@@ -13,7 +13,7 @@ func TestRateLimiter(t *testing.T) {
 
 	mw := RateLimiter(1, 3)
 	handler := func() opm.Handler {
-		return opm.HandlerFunc(func(c opm.Context) error {
+		return opm.Handler(func(c opm.Context) error {
 			return c.String(http.StatusOK, "test")
 		})
 	}
@@ -38,7 +38,9 @@ func TestRateLimiter(t *testing.T) {
 		rec := httptest.NewRecorder()
 		c := or.NewContext(rec, req)
 
-		mw.Middleware(handler()).Run(c)
+		h := mw.Middleware(handler())
+		h(c)
+
 		if tc.code != rec.Code {
 			t.Errorf("%v - %v", tc.code, rec.Code)
 		}

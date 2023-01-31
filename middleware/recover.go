@@ -10,7 +10,7 @@ import (
 
 // Recover --
 func Recover(next opm.Handler) opm.Handler {
-	return opm.HandlerFunc(func(c opm.Context) error {
+	return opm.Handler(func(c opm.Context) error {
 		defer func() {
 			var err error
 			if r := recover(); r != nil {
@@ -28,6 +28,6 @@ func Recover(next opm.Handler) opm.Handler {
 			}
 		}()
 
-		return next.Run(c)
+		return next(c)
 	})
 }

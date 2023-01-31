@@ -77,9 +77,9 @@ func (g *Group) add(method, path string, h Handler, middleware ...MiddlewareFunc
 }
 
 func (g *Group) File(path, file string) {
-	h := HandlerFunc(func(c Context) error {
+	h := func(c Context) error {
 		return c.File(file)
-	})
+	}
 
 	g.Path(g.prefix + path).Handler(h).Method(http.MethodGet)
 }

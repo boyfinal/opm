@@ -68,7 +68,7 @@ func CSRF(config CSRFConfig) opm.MiddlewareFunc {
 	}
 
 	return func(next opm.Handler) opm.Handler {
-		return opm.HandlerFunc(func(c opm.Context) error {
+		return opm.Handler(func(c opm.Context) error {
 			realToken, err := getToken(config.CookieName, c.Request())
 			if err != nil || len(realToken) != tokenLength {
 				realToken, err = opm.GenerateRandBytes(tokenLength)
@@ -110,7 +110,7 @@ func CSRF(config CSRFConfig) opm.MiddlewareFunc {
 			}
 
 			c.Response().Header().Add("Vary", "Cookie")
-			return next.Run(c)
+			return next(c)
 		})
 	}
 }

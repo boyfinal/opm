@@ -70,7 +70,7 @@ func (r *Route) Handler(handler Handler) *Route {
 }
 
 func (r *Route) HandlerFunc(f func(Context) error) *Route {
-	return r.Handler(HandlerFunc(f))
+	return r.Handler(f)
 }
 
 func (r *Route) Use(m ...MiddlewareFunc) *Route {
