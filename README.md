@@ -22,7 +22,7 @@ import (
 )
 
 func main() {
-  // Echo instance
+  // Opm instance
   or := opm.NewRouter()
 
   // Middleware
